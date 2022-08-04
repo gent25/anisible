@@ -1,3 +1,11 @@
-192.168.124.151
-192.168.124.152
-192.168.124.153
+#[all]
+#your-server-1
+#your-server-2
+#your-server-3
+
+[Rhel_hosts]
+192.168.124.129
+192.168.124.128
+
+#[category2]
+#your-server-3
