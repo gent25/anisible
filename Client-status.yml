@@ -1,9 +1,8 @@
 ---
-- name: Status
+- name: Ping all servers
   hosts: all
-  become: yes
-
+  become: no
 
   tasks:
-  - name: Test connectivity
-	ping:
+    - name: Ping the servers to check connectivity
+      ansible.builtin.ping:
