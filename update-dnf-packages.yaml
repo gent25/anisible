@@ -1,7 +1,6 @@
 ---
 - name: Update Rocky Linux servers using dnf
-  hosts: rocky_servers
-  become: yes
+  hosts: all
 
   tasks:
     - name: Update all packages to the latest version
