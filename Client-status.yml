@@ -1,6 +1,8 @@
 ---
-- name: “Check remote clients connectivity status”
+- name: Status
   hosts: all
+  become: yes
+
 
   tasks:
   - name: Test connectivity
