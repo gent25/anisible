@@ -1,0 +1,16 @@
+---
+- name: Update Rocky Linux servers using dnf
+  hosts: rocky_servers
+  become: yes
+
+  tasks:
+    - name: Update all packages to the latest version
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+
+    - name: Clean up unused packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: absent
+        autoremove: yes
