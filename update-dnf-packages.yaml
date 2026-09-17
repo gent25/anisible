@@ -1,5 +1,5 @@
 ---
-- name: Update Rocky Linux servers using dnf
+- name: Update Rocky-RHEL Linux servers using dnf
   hosts: all
   become: yes
 
