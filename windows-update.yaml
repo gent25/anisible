@@ -15,4 +15,7 @@
 
     - name: Show update summary
       ansible.builtin.debug:
-        msg: "Reboot required: {{ update_result.reboot_required }}, Updates installed: {{ update_result.installed_count }}"
+        msg: >
+          Reboot required: {{ update_result.reboot_required | default(false) }}, 
+          Updates installed: {{ update_result.installed_count | default(0) }}, 
+          Found updates: {{ update_result.updates | default({}) | length }}
