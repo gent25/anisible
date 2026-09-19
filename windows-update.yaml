@@ -1,0 +1,18 @@
+---
+- name: Update Windows Workstations
+  hosts: windows_workstations
+  gather_facts: false
+  tasks:
+    - name: Install critical and security updates
+      ansible.windows.win_updates:
+        category_names:
+          - CriticalUpdates
+          - SecurityUpdate
+        state: installed
+        reboot: true
+        reboot_timeout: 1200
+      register: update_result
+
+    - name: Show update summary
+      ansible.builtin.debug:
+        msg: "Reboot required: {{ update_result.reboot_required }}, Updates installed: {{ update_result.installed_count }}"
