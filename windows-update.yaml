@@ -1,6 +1,6 @@
 ---
 - name: Update Windows Workstations
-  hosts: windows_workstations
+  hosts: all
   gather_facts: false
   tasks:
     - name: Install critical and security updates
