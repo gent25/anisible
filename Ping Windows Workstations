@@ -1,0 +1,8 @@
+---
+- name: Verify Connectivity to Windows Workstations
+  hosts: all
+  gather_facts: no  # Speeds up execution; skip gathering full system specs just for a ping
+  
+  tasks:
+    - name: Send WinRM Ping to Workstation
+      ansible.windows.win_ping:
