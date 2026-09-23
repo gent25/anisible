@@ -1,11 +1,11 @@
-#[all]
-#your-server-1
-#your-server-2
-#your-server-3
+[lab_hosts]
+rock-node-1       ansible_host=192.168.1.7
+rock-node-2       ansible_host=192.168.1.117
+rock-node-3       ansible_host=192.168.1.185
+rock-node-4       ansible_host=192.168.1.179
+Rhel-control-node ansible_host=192.168.1.64
 
-[Rhel_hosts]
-192.168.124.129
-192.168.124.128
-
-#[category2]
-#your-server-3
+[windows_workstations]
+WORKSTATION1      ansible_host=192.168.1.138
+WORKSTATION2      ansible_host=192.168.1.165
+WORKSTATION3      ansible_host=192.168.1.232
