@@ -1,0 +1,21 @@
+---
+- name: Patch Third-Party Applications via WinGet
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Upgrade all software in the machine scope silently
+      ansible.windows.win_powershell:
+        script: |
+          # Resolve explicit path to system-wide winget execution
+          $winget = Get-Command winget.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+          if (-not $winget) {
+              $winget = "C:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*_x64__8wekyb3d8bbwe\winget.exe"
+              $winget = Resolve-Path $winget | Select-Object -ExpandProperty Path -Last 1
+          }
+
+          if ($winget) {
+              # Upgrades all out-of-date apps machine-wide without user interaction
+              Start-Process -FilePath $winget -ArgumentList "upgrade --all --silent --accept-package-agreements --accept-source-agreements --scope machine" -Wait -NoNewWindow
+          } else {
+              Throw "WinGet executable could not be resolved in the System context."
+          }
