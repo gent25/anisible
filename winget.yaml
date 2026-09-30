@@ -1,21 +1,31 @@
 ---
-- name: Patch Third-Party Applications via WinGet
-  hosts: all
+- name: Patch third-party apps via WinGet
+  hosts: windows
   gather_facts: false
+  become: true
+  become_method: runas
+  become_user: SYSTEM
   tasks:
-    - name: Upgrade all software in the machine scope silently
+    - name: Upgrade machine-scope apps
       ansible.windows.win_powershell:
         script: |
-          # Resolve explicit path to system-wide winget execution
-          $winget = Get-Command winget.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
-          if (-not $winget) {
-              $winget = "C:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*_x64__8wekyb3d8bbwe\winget.exe"
-              $winget = Resolve-Path $winget | Select-Object -ExpandProperty Path -Last 1
-          }
+          $Ansible.Changed = $false
 
-          if ($winget) {
-              # Upgrades all out-of-date apps machine-wide without user interaction
-              Start-Process -FilePath $winget -ArgumentList "upgrade --all --silent --accept-package-agreements --accept-source-agreements --scope machine" -Wait -NoNewWindow
-          } else {
-              Throw "WinGet executable could not be resolved in the System context."
+          $winget = (Get-Command winget.exe -ErrorAction SilentlyContinue).Source
+          if (-not $winget) {
+              $winget = Get-ChildItem "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*_x64__8wekyb3d8bbwe\winget.exe" -ErrorAction SilentlyContinue |
+                  Sort-Object { [version](($_.Directory.Name -split '_')[1]) } -Descending |
+                  Select-Object -First 1 -ExpandProperty FullName
           }
+          if (-not $winget) { $Ansible.Failed = $true; Write-Error "WinGet not found"; return }
+
+          $out = & $winget upgrade --all --silent --scope machine --source winget `
+                   --accept-package-agreements --accept-source-agreements `
+                   --disable-interactivity 2>&1
+          $out
+
+          # -1978335189 = 0x8A15002B, nothing to upgrade
+          if ($LASTEXITCODE -notin 0, -1978335189) { $Ansible.Failed = $true }
+          if ($out -match 'Successfully installed') { $Ansible.Changed = $true }
+      async: 3600
+      poll: 30
