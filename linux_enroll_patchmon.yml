@@ -1,0 +1,46 @@
+---
+- name: Enroll Linux workstations into PatchMon
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    # Override these in AWX Job Template "Extra Variables" or an AWX Survey
+    patchmon_url: "http://192.168.1.13:3000"
+    patchmon_token_key: "REPLACE_WITH_TOKEN_KEY"
+    patchmon_token_secret: "REPLACE_WITH_TOKEN_SECRET"
+    # Set to true when migrating workstations from your old PatchMon server
+    force_reenroll: true
+
+  tasks:
+    - name: Remove stale PatchMon config if re-enrolling
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/patchmon/config.yml
+        - /etc/patchmon/credentials.yml
+      when: force_reenroll | bool
+
+    - name: Ensure curl is installed
+      ansible.builtin.package:
+        name: curl
+        state: present
+
+    - name: Download and run PatchMon auto-enrollment script
+      ansible.builtin.shell: |
+        curl -sk "{{ patchmon_url }}/api/v1/auto-enrollment/script?type=linux&token_key={{ patchmon_token_key }}&token_secret={{ patchmon_token_secret }}" | bash
+      args:
+        creates: /etc/patchmon/credentials.yml
+      no_log: true
+
+    - name: Verify PatchMon agent connectivity
+      ansible.builtin.command: patchmon-agent ping
+      register: ping_result
+      changed_when: false
+
+    - name: Ensure patchmon-agent service is enabled and running
+      ansible.builtin.systemd:
+        name: patchmon-agent
+        state: started
+        enabled: true
